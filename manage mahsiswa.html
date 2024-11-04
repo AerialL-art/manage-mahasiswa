@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Data Mahasiswa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #e6f2ff; /* Background biru muda */
+            color: #333;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #0056b3;
+        }
+
+        h2 {
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #0056b3;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            justify-content: space-between;
+        }
+
+        .form-group input,
+        .form-group select,
+        button {
+            padding: 10px;
+            border: 1px solid #0056b3;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 200px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #007bff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #hasilPencarian {
+            margin-top: 20px;
+            border: 1px solid #0056b3;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Manajemen Data Mahasiswa</h1>
+
+    <h2>Tambah Mahasiswa</h2>
+    <div class="form-group">
+        <input type="text" id="nama" placeholder="Nama" required onkeydown="moveToNext(event, 'nim')" oninput="this.value = this.value.toUpperCase()">
+        <input type="text" id="nim" placeholder="NIM" required onkeydown="moveToNext(event, 'tanggal')" oninput="handleNIMBackspace(event)">
+    </div>
+    <div class="form-group">
+        <select id="tanggal" required onchange="updateAge()" onkeydown="moveToNext(event, 'bulan')" oninput="handleDateBackspace(event)">
+            <option value="">Tanggal</option>
+            <script>
+                for (let i = 1; i <= 31; i++) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+        <select id="bulan" required onchange="updateAge()" onkeydown="moveToNext(event, 'tahun')" oninput="handleDateBackspace(event)">
+            <option value="">Bulan</option>
+            <script>
+                for (let i = 1; i <= 12; i++) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+        <select id="tahun" required onchange="updateAge()" onkeydown="moveToNext(event, 'jenisKelamin')" oninput="handleDateBackspace(event)">
+            <option value="">Tahun</option>
+            <script>
+                const currentYear = new Date().getFullYear();
+                for (let i = currentYear; i >= 1900; i--) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+    </div>
+    <div class="form-group">
+        <input type="number" id="umur" placeholder="Umur" required readonly>
+        <input type="text" id="jenisKelamin" placeholder="Jenis Kelamin (P/L)" required onkeydown="moveToNext(event, 'jurusan')" oninput="this.value = this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+        <select id="jurusan" required onkeydown="moveToNext(event, 'submitButton')">
+            <option value="">Pilih Jurusan</option>
+            <option value="Teknik Informatika">Teknik Informatika</option>
+            <option value="Sistem Informasi">Sistem Informasi</option>
+            <option value="Teknik Elektro">Teknik Elektro</option>
+            <option value="Pendidikan Guru Sekolah Dasar">Pendidikan Guru Sekolah Dasar</option>
+            <option value="Akuntansi">Akuntansi</option>
+            <option value="Manajemen">Manajemen</option>
+            <option value="Psikologi">Psikologi</option>
+            <option value="Hukum">Hukum</option>
+            <option value="Kesehatan Masyarakat">Kesehatan Masyarakat</option>
+        </select>
+    </div>
+    <button id="submitButton" onclick="tambahMahasiswa()">Tambah Mahasiswa</button>
+
+    <h2>Daftar Mahasiswa</h2>
+    <table id="output">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>NIM</th>
+                <th>Tanggal Lahir</th>
+                <th>Umur</th>
+                <th>Jurusan</th>
+                <th>Jenis Kelamin</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data mahasiswa akan ditampilkan di sini -->
+        </tbody>
+    </table>
+
+    <h2>Cari Mahasiswa</h2>
+    <input type="text" id="cariNIM" placeholder="Masukkan NIM" onkeydown="if(event.key === 'Enter') cariMahasiswa()">
+    <div id="hasilPencarian"></div>
+
+    <script>
+        // Kelas Mahasiswa
+        class Mahasiswa {
+            constructor(nama, nim, umur, jurusan, jenisKelamin, tanggalLahir) {
+                this.nama = nama;
+                this.nim = nim;
+                this.umur = umur;
+                this.jurusan = jurusan;
+                this.jenisKelamin = jenisKelamin;
+                this.tanggalLahir = tanggalLahir;
+            }
+        }
+
+        // Array untuk menyimpan daftar mahasiswa
+        const daftarMahasiswa = [];
+
+        // Fungsi untuk menambah mahasiswa
+        function tambahMahasiswa() {
+            const nama = document.getElementById('nama').value;
+            const nim = document.getElementById('nim').value;
+
+            // Validasi NIM
+            const nimRegex = /^\d{9,10}$/; // NIM harus terdiri dari 9 atau 10 digit
+            if (!nimRegex.test(nim)) {
+                alert("Format NIM tidak valid! Pastikan NIM terdiri dari 9 atau 10 digit.");
+                return;
+            }
+
+            const tanggal = document.getElementById('tanggal').value;
+            const bulan = document.getElementById('bulan').value;
+            const tahun = document.getElementById('tahun').value;
+            const umur = document.getElementById('umur').value; // Umur sudah dihitung secara otomatis
+            const jurusan = document.getElementById('jurusan').value;
+            const jenisKelamin = document.getElementById('jenisKelamin').value;
+
+            if (!nama || !nim || !jurusan || !jenisKelamin || !tanggal || !bulan || !tahun) {
+                alert("Mohon isi semua kolom sebelum menambah mahasiswa.");
+                return;
+            }
+
+            const tanggalLahir = `${tanggal}-${bulan}-${tahun}`;
+            const mahasiswaBaru = new Mahasiswa(nama, nim, umur, jurusan, jenisKelamin, tanggalLahir);
+            daftarMahasiswa.push(mahasiswaBaru);
+            tampilkanMahasiswa();
+            resetForm();
+        }
+
+        // Fungsi untuk menghitung umur berdasarkan tanggal lahir
+        function updateAge() {
+            const tanggal = document.getElementById('tanggal').value;
+            const bulan = document.getElementById('bulan').value;
+            const tahun = document.getElementById('tahun').value;
+            if (tanggal && bulan && tahun) {
+                const tanggalLahir = new Date(`${tahun}-${bulan}-${tanggal}`);
+                const sekarang = new Date();
+                let umur = sekarang.getFullYear() - tanggalLahir.getFullYear();
+                const m = sekarang.getMonth() - tanggalLahir.getMonth();
+                if (m < 0 || (m === 0 && sekarang.getDate() < tanggalLahir.getDate())) {
+                    umur--;
+                }
+                document.getElementById('umur').value = umur;
+            }
+        }
+
+        // Fungsi untuk menampilkan daftar mahasiswa
+        function tampilkanMahasiswa() {
+            const tbody = document.querySelector('#output tbody');
+            tbody.innerHTML = ''; // Kosongkan tabel sebelum menampilkan data baru
+            daftarMahasiswa.forEach((mahasiswa, index) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = index + 1;
+                row.insertCell(1).innerText = mahasiswa.nama;
+                row.insertCell(2).innerText = mahasiswa.nim;
+                row.insertCell(3).innerText = mahasiswa.tanggalLahir;
+                row.insertCell(4).innerText = mahasiswa.umur;
+                row.insertCell(5).innerText = mahasiswa.jurusan;
+                row.insertCell(6).innerText = mahasiswa.jenisKelamin;
+            });
+        }
+
+        // Fungsi untuk mereset form input
+        function resetForm() {
+            document.getElementById('nama').value = '';
+            document.getElementById('nim').value = '';
+            document.getElementById('umur').value = '';
+            document.getElementById('jurusan').value = '';
+            document.getElementById('jenisKelamin').value = '';
+            document.getElementById('tanggal').selectedIndex = 0;
+            document.getElementById('bulan').selectedIndex = 0;
+            document.getElementById('tahun').selectedIndex = 0;
+            document.getElementById('cariNIM').value = ''; // Reset pencarian
+            document.getElementById('hasilPencarian').innerHTML = ''; // Reset hasil pencarian
+        }
+
+        // Fungsi untuk mencari mahasiswa berdasarkan NIM
+        function cariMahasiswa() {
+            const nimCari = document.getElementById('cariNIM').value;
+            const hasilPencarian = document.getElementById('hasilPencarian');
+
+            const hasil = daftarMahasiswa.find(mhs => mhs.nim === nimCari);
+            if (hasil) {
+                hasilPencarian.innerHTML = `
+                    <h3>Hasil Pencarian:</h3>
+                    <table>
+                        <tr>
+                            <th>Nama</th>
+                            <td>${hasil.nama}</td>
+                        </tr>
+                        <tr>
+                            <th>NIM</th>
+                            <td>${hasil.nim}</td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Lahir</th>
+                            <td>${hasil.tanggalLahir}</td>
+                        </tr>
+                        <tr>
+                            <th>Umur</th>
+                            <td>${hasil.umur}</td>
+                        </tr>
+                        <tr>
+                            <th>Jurusan</th>
+                            <td>${hasil.jurusan}</td>
+                        </tr>
+                        <tr>
+                            <th>Jenis Kelamin</th>
+                            <td>${hasil.jenisKelamin}</td>
+                        </tr>
+                    </table>
+                `;
+            } else {
+                hasilPencarian.innerHTML = '<p>Mahasiswa tidak ditemukan!</p>';
+            }
+        }
+
+        // Fungsi untuk memindahkan fokus ke input berikutnya
+        function moveToNext(event, nextElementId) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Mencegah form submit
+                const nextElement = document.getElementById(nextElementId);
+                if (nextElement) {
+                    nextElement.focus();
+                }
+            }
+        }
+
+        // Fungsi untuk menangani Backspace di NIM dan Tanggal
+        function handleNIMBackspace(event) {
+            if (event.key === 'Backspace') {
+                const nimInput = document.getElementById('nim');
+                if (nimInput.value) {
+                    nimInput.value = nimInput.value.slice(0, -1); // Hapus karakter terakhir
+                }
+            }
+        }
+
+        function handleDateBackspace(event) {
+            const tanggalInput = document.getElementById('tanggal');
+            const bulanInput = document.getElementById('bulan');
+            const tahunInput = document.getElementById('tahun');
+
+            if (event.key === 'Backspace') {
+                if (tanggalInput.value) {
+                    tanggalInput.value = ''; // Hapus nilai tanggal
+                } else if (bulanInput.value) {
+                    bulanInput.value = ''; // Hapus nilai bulan
+                } else if (tahunInput.value) {
+                    tahunInput.value = ''; // Hapus nilai tahun
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
